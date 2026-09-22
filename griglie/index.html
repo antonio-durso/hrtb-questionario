@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Griglie e contenuti</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        --primary: #1f3864;
+        --primary-hover: #182c4f;
+        --tint: #e9eef7;
+        --neutral: #f4f6fa;
+        --surface: #ffffff;
+        --border: #d5ddea;
+        --border-strong: #b9c4d6;
+        --on-surface: #16213a;
+        --muted: #5a6478;
+        --danger: #a32a1f;
+        --danger-surface: #fbe9e6;
+        --success: #1b7a4b;
+        --success-surface: #e6f1ea;
+        --attention: #8a5a0b;
+        --attention-surface: #fcf1dc;
+        --radius: 10px;
+        --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; background: var(--neutral); color: var(--on-surface);
+        font-family: var(--font); font-size: 15px; line-height: 1.5;
+      }
+      header {
+        background: var(--primary); color: #fff; padding: 18px 20px;
+        position: sticky; top: 0; z-index: 20;
+      }
+      header h1 { margin: 0 0 4px; font-size: 20px; }
+      header p { margin: 0; font-size: 13px; opacity: .85; }
+      .barra {
+        display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;
+      }
+      main { max-width: 900px; margin: 0 auto; padding: 20px; }
+      .blocco { margin-bottom: 34px; }
+      .blocco > h2 {
+        font-size: 17px; margin: 0 0 4px; color: var(--primary);
+      }
+      .blocco > .nota { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+      .scheda {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: var(--radius); padding: 14px; margin-bottom: 12px;
+      }
+      .riga { display: flex; gap: 10px; flex-wrap: wrap; }
+      .riga > * { flex: 1 1 240px; }
+      label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+      input[type="text"], input[type="number"], textarea {
+        width: 100%; padding: 8px 10px; font: inherit;
+        border: 1px solid var(--border-strong); border-radius: 8px;
+        background: #fff; color: var(--on-surface);
+      }
+      textarea { resize: vertical; min-height: 58px; }
+      input:focus, textarea:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+      button {
+        font: inherit; cursor: pointer; border-radius: 8px;
+        border: 1px solid var(--border-strong); background: #fff;
+        color: var(--on-surface); padding: 8px 12px;
+      }
+      button:hover { background: var(--tint); }
+      button.primario { background: var(--primary); border-color: var(--primary); color: #fff; }
+      button.primario:hover { background: var(--primary-hover); }
+      button.pericolo { color: var(--danger); border-color: #e7c4bf; background: #fff; }
+      button.pericolo:hover { background: var(--danger-surface); }
+      button.piccolo { padding: 4px 9px; font-size: 13px; }
+      .livello { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+      .livello .num {
+        flex: 0 0 28px; text-align: center; font-weight: 700; color: var(--primary);
+        padding-top: 9px; font-size: 14px;
+      }
+      .livello textarea { flex: 1 1 auto; }
+      .domanda {
+        border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 10px;
+      }
+      .intestazione {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 10px; margin-bottom: 10px;
+      }
+      .intestazione .id {
+        font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px;
+        background: var(--tint); color: var(--primary);
+        padding: 3px 8px; border-radius: 999px;
+      }
+      .avviso {
+        background: var(--attention-surface); color: var(--attention);
+        border-radius: var(--radius); padding: 12px 14px; font-size: 13.5px;
+        margin-bottom: 20px;
+      }
+      .avviso strong { display: block; margin-bottom: 3px; }
+      .esito {
+        position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+        background: var(--success-surface); color: var(--success);
+        border: 1px solid #bfdcc9; padding: 9px 16px; border-radius: 999px;
+        font-size: 13.5px; opacity: 0; pointer-events: none; transition: opacity .2s;
+      }
+      .esito.visibile { opacity: 1; }
+      .vuoto { color: var(--muted); font-size: 13.5px; font-style: italic; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Griglie e contenuti</h1>
+      <p>Dimensioni, aree, indicatori e domande: puoi modificarli, aggiungerli ed eliminarli.</p>
+      <div class="barra">
+        <button class="primario" data-azione="salva">Salva</button>
+        <button data-azione="esporta">Esporta file</button>
+        <button data-azione="importa">Importa file</button>
+        <button data-azione="ripristina">Torna all'originale</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="avviso">
+        <strong>Come funziona il salvataggio</strong>
+        Le modifiche restano in questo browser e si salvano da sole. Con
+        <em>Esporta file</em> porti una copia su un altro dispositivo e con
+        <em>Importa file</em> la riporti qui. Usa <em>Esporta</em> ogni volta che
+        hai finito una sessione di lavoro.
+      </div>
+      <div id="contenuto"></div>
+    </main>
+
+    <div class="esito" id="esito"></div>
+    <input type="file" id="fileInput" accept=".json,application/json" hidden />
+
+    <script src="contenuti.js"></script>
+    <script>
+      (function () {
+        var CHIAVE = "hrtb-griglie-v1";
+        var COLLEZIONI = [
+          {
+            chiave: "dimensioni",
+            titolo: "Dimensioni del colloquio",
+            nota: "Le 7 dimensioni con cui si valuta il candidato. Il peso determina quanto conta la dimensione nel punteggio finale. La somma dei pesi viene normalizzata automaticamente.",
+            conPeso: true,
+            conDomande: true,
+          },
+          {
+            chiave: "aree",
+            titolo: "Aree della griglia interna",
+            nota: "Le 4 aree che raccolgono gli indicatori della valutazione degli operatori. Servono da guida, non hanno peso.",
+          },
+          {
+            chiave: "indicatori",
+            titolo: "I 16 indicatori",
+            nota: "Gli indicatori della valutazione mensile degli operatori, con i 5 livelli descritti. Sono divisi in 4 aree (1.x tecniche, 2.x performance, 3.x trasversali, 4.x compliance).",
+          },
+        ];
+
+        var stato = carica();
+
+        function copia(o) {
+          return JSON.parse(JSON.stringify(o));
+        }
+        function carica() {
+          try {
+            var salvato = localStorage.getItem(CHIAVE);
+            if (salvato) return JSON.parse(salvato);
+          } catch (e) {}
+          return copia(window.CONTENUTI_INIZIALI);
+        }
+        function salva(silenzioso) {
+          try {
+            localStorage.setItem(CHIAVE, JSON.stringify(stato));
+            if (!silenzioso) avvisa("Salvato in questo browser");
+          } catch (e) {
+            avvisa("Non sono riuscito a salvare: memoria del browser piena");
+          }
+        }
+        var timer;
+        function salvaPoco() {
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            salva(true);
+          }, 600);
+        }
+        function avvisa(t) {
+          var e = document.getElementById("esito");
+          e.textContent = t;
+          e.classList.add("visibile");
+          clearTimeout(e._t);
+          e._t = setTimeout(function () {
+            e.classList.remove("visibile");
+          }, 2200);
+        }
+
+        function elemento(tag, attr, figli) {
+          var el = document.createElement(tag);
+          if (attr)
+            Object.keys(attr).forEach(function (k) {
+              if (k === "class") el.className = attr[k];
+              else if (k === "text") el.textContent = attr[k];
+              else el.setAttribute(k, attr[k]);
+            });
+          (figli || []).forEach(function (f) {
+            if (f) el.appendChild(f);
+          });
+          return el;
+        }
+        function campo(etichetta, valore, attr) {
+          var i = elemento("input", Object.assign({ type: "text", value: valore || "" }, attr));
+          var l = elemento("label", { text: etichetta });
+          var d = elemento("div", null, [l, i]);
+          return d;
+        }
+        function area(etichetta, valore, attr) {
+          var t = elemento("textarea", Object.assign({}, attr));
+          t.value = valore || "";
+          var l = elemento("label", { text: etichetta });
+          return elemento("div", null, [l, t]);
+        }
+
+        function rendi() {
+          var contenitore = document.getElementById("contenuto");
+          contenitore.textContent = "";
+          COLLEZIONI.forEach(function (coll) {
+            contenitore.appendChild(rendiBlocco(coll));
+          });
+        }
+
+        function rendiBlocco(coll) {
+          var lista = stato[coll.chiave] || [];
+          var blocco = elemento("section", { class: "blocco" });
+          blocco.appendChild(elemento("h2", { text: coll.titolo }));
+          blocco.appendChild(elemento("p", { class: "nota", text: coll.nota }));
+
+          if (coll.conPeso) {
+            var somma = lista.reduce(function (s, it) {
+              return s + (Number(it.peso) || 0);
+            }, 0);
+            blocco.appendChild(
+              elemento("p", {
+                class: "nota",
+                text:
+                  "Pesi inseriti: " +
+                  lista
+                    .map(function (it) {
+                      return (it.peso * 100).toFixed(0) + "%";
+                    })
+                    .join(" · ") +
+                  " — somma " +
+                  somma.toFixed(2) +
+                  " (il programma la normalizza)",
+              })
+            );
+          }
+
+          lista.forEach(function (item, i) {
+            blocco.appendChild(rendiItem(coll, item, i));
+          });
+
+          blocco.appendChild(
+            elemento(
+              "button",
+              { class: "primario", "data-azione": "aggiungi-item", "data-coll": coll.chiave },
+              [document.createTextNode("+ Aggiungi")]
+            )
+          );
+          return blocco;
+        }
+
+        function rendiItem(coll, item, i) {
+          var scheda = elemento("div", { class: "scheda" });
+
+          var testa = elemento("div", { class: "intestazione" });
+          testa.appendChild(elemento("span", { class: "id", text: item.id || "nuovo" }));
+          var elimina = elemento(
+            "button",
+            {
+              class: "pericolo piccolo",
+              "data-azione": "elimina-item",
+              "data-coll": coll.chiave,
+              "data-i": i,
+            },
+            [document.createTextNode("Elimina")]
+          );
+          testa.appendChild(elimina);
+          scheda.appendChild(testa);
+
+          var riga = elemento("div", { class: "riga" });
+          riga.appendChild(
+            campo("Codice", item.id, {
+              "data-coll": coll.chiave,
+              "data-i": i,
+              "data-field": "id",
+            })
+          );
+          riga.appendChild(
+            campo("Nome", item.nome, {
+              "data-coll": coll.chiave,
+              "data-i": i,
+              "data-field": "nome",
+            })
+          );
+          if (coll.conPeso) {
+            riga.appendChild(
+              campo("Peso (es. 0.25)", item.peso, {
+                type: "number",
+                step: "0.01",
+                min: "0",
+                "data-coll": coll.chiave,
+                "data-i": i,
+                "data-field": "peso",
+              })
+            );
+          }
+          scheda.appendChild(riga);
+
+          var livelli = item.livelli || [];
+          scheda.appendChild(
+            elemento("label", {
+              text: "Livelli descritti (" + livelli.length + ")",
+              style: "margin-top:14px",
+            })
+          );
+          livelli.forEach(function (testo, j) {
+            var r = elemento("div", { class: "livello" });
+            r.appendChild(elemento("div", { class: "num", text: String(j + 1) }));
+            var t = elemento("textarea", {
+              "data-coll": coll.chiave,
+              "data-i": i,
+              "data-list": "livelli",
+              "data-j": j,
+            });
+            t.value = testo;
+            r.appendChild(t);
+            r.appendChild(
+              elemento(
+                "button",
+                {
+                  class: "pericolo piccolo",
+                  "data-azione": "elimina-livello",
+                  "data-coll": coll.chiave,
+                  "data-i": i,
+                  "data-j": j,
+                },
+                [document.createTextNode("−")]
+              )
+            );
+            scheda.appendChild(r);
+          });
+          if (!livelli.length)
+            scheda.appendChild(elemento("p", { class: "vuoto", text: "Nessun livello." }));
+          scheda.appendChild(
+            elemento(
+              "button",
+              {
+                class: "piccolo",
+                "data-azione": "aggiungi-livello",
+                "data-coll": coll.chiave,
+                "data-i": i,
+              },
+              [document.createTextNode("+ Livello")]
+            )
+          );
+
+          if (coll.conDomande) {
+            var domande = item.domande || [];
+            scheda.appendChild(
+              elemento("label", {
+                text: "Domande aperte (" + domande.length + ")",
+                style: "margin-top:16px",
+              })
+            );
+            domande.forEach(function (d, j) {
+              var box = elemento("div", { class: "domanda" });
+              var t = elemento("textarea", {
+                "data-coll": coll.chiave,
+                "data-i": i,
+                "data-list": "domande",
+                "data-j": j,
+                "data-field": "testo",
+              });
+              t.value = d.testo || "";
+              box.appendChild(elemento("label", { text: "Domanda " + (j + 1) }));
+              box.appendChild(t);
+              var o = elemento("input", {
+                type: "text",
+                "data-coll": coll.chiave,
+                "data-i": i,
+                "data-list": "domande",
+                "data-j": j,
+                "data-field": "osserva",
+              });
+              o.value = d.osserva || "";
+              box.appendChild(elemento("label", { text: "Cosa osservare", style: "margin-top:8px" }));
+              box.appendChild(o);
+              box.appendChild(
+                elemento(
+                  "button",
+                  {
+                    class: "pericolo piccolo",
+                    style: "margin-top:8px",
+                    "data-azione": "elimina-domanda",
+                    "data-coll": coll.chiave,
+                    "data-i": i,
+                    "data-j": j,
+                  },
+                  [document.createTextNode("Elimina domanda")]
+                )
+              );
+              scheda.appendChild(box);
+            });
+            scheda.appendChild(
+              elemento(
+                "button",
+                {
+                  class: "piccolo",
+                  style: "margin-top:10px",
+                  "data-azione": "aggiungi-domanda",
+                  "data-coll": coll.chiave,
+                  "data-i": i,
+                },
+                [document.createTextNode("+ Domanda")]
+              )
+            );
+          }
+
+          return scheda;
+        }
+
+        document.addEventListener("input", function (ev) {
+          var el = ev.target;
+          var coll = el.getAttribute("data-coll");
+          if (!coll) return;
+          var i = Number(el.getAttribute("data-i"));
+          var field = el.getAttribute("data-field");
+          var list = el.getAttribute("data-list");
+          var item = stato[coll][i];
+          if (!item) return;
+          if (list) {
+            var j = Number(el.getAttribute("data-j"));
+            if (field) item[list][j][field] = el.value;
+            else item[list][j] = el.value;
+          } else if (field === "peso") {
+            item.peso = Number(el.value) || 0;
+          } else {
+            item[field] = el.value;
+          }
+          salvaPoco();
+        });
+
+        document.addEventListener("click", function (ev) {
+          var b = ev.target.closest("[data-azione]");
+          if (!b) return;
+          var azione = b.getAttribute("data-azione");
+          var coll = b.getAttribute("data-coll");
+          var i = Number(b.getAttribute("data-i"));
+          var j = Number(b.getAttribute("data-j"));
+
+          if (azione === "salva") return salva();
+          if (azione === "esporta") return esporta();
+          if (azione === "importa") return document.getElementById("fileInput").click();
+          if (azione === "ripristina") {
+            if (confirm("Riportare tutto ai contenuti originali? Le modifiche fatte qui andranno perse.")) {
+              stato = copia(window.CONTENUTI_INIZIALI);
+              salva(true);
+              rendi();
+              avvisa("Ripristinato l'originale");
+            }
+            return;
+          }
+          if (azione === "aggiungi-item") {
+            var nuovo = { id: "nuovo", nome: "Nuova voce", livelli: ["", "", "", "", ""] };
+            if (coll === "dimensioni") {
+              nuovo.peso = 0.1;
+              nuovo.domande = [];
+            }
+            stato[coll].push(nuovo);
+            salva(true);
+            rendi();
+            return;
+          }
+          if (azione === "elimina-item") {
+            if (!confirm("Eliminare \"" + (stato[coll][i].nome || "questa voce") + "\"?")) return;
+            stato[coll].splice(i, 1);
+            salva(true);
+            rendi();
+            return;
+          }
+          if (azione === "aggiungi-livello") {
+            stato[coll][i].livelli.push("");
+            salva(true);
+            rendi();
+            return;
+          }
+          if (azione === "elimina-livello") {
+            stato[coll][i].livelli.splice(j, 1);
+            salva(true);
+            rendi();
+            return;
+          }
+          if (azione === "aggiungi-domanda") {
+            stato[coll][i].domande.push({ testo: "", osserva: "" });
+            salva(true);
+            rendi();
+            return;
+          }
+          if (azione === "elimina-domanda") {
+            stato[coll][i].domande.splice(j, 1);
+            salva(true);
+            rendi();
+            return;
+          }
+        });
+
+        function esporta() {
+          var testo = JSON.stringify(stato, null, 2);
+          var blob = new Blob([testo], { type: "application/json" });
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "griglie-hrtb.json";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          avvisa("File esportato");
+        }
+
+        document.getElementById("fileInput").addEventListener("change", function (ev) {
+          var f = ev.target.files[0];
+          if (!f) return;
+          var r = new FileReader();
+          r.onload = function () {
+            try {
+              var dati = JSON.parse(r.result);
+              if (!dati.dimensioni) throw new Error("formato");
+              stato = dati;
+              salva(true);
+              rendi();
+              avvisa("File importato");
+            } catch (e) {
+              avvisa("Il file non è leggibile");
+            }
+          };
+          r.readAsText(f);
+          ev.target.value = "";
+        });
+
+        rendi();
+      })();
+    </script>
+  </body>
+</html>
