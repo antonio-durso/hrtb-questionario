@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Questionario di selezione</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <script>
+      (function () {
+        var p = window.location.pathname;
+        var seg = p.split("/").filter(Boolean);
+        var root = seg.length ? "/" + seg[0] + "/" : "/";
+        var target = /valutatore/i.test(p)
+          ? "#/valutatore"
+          : /ricevute/i.test(p)
+            ? "#/valutatore?sez=ricevute"
+            : /archivio/i.test(p)
+              ? "#/valutatore?sez=archivio"
+              : "#/questionario";
+        window.location.replace(root + target);
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Reindirizzamento… <a href="./#/questionario">Apri il questionario</a>.</p>
+  </body>
+</html>
