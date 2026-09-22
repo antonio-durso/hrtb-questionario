@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Griglie e contenuti</title>
+    <title>HRDB · Griglie e contenuti</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
     <style>
@@ -517,7 +517,7 @@
           var blob = new Blob([testo], { type: "application/json" });
           var a = document.createElement("a");
           a.href = URL.createObjectURL(blob);
-          a.download = "griglie-hrtb.json";
+          a.download = "griglie-hrdb.json";
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
