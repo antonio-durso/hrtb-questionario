@@ -380,6 +380,7 @@ function hrdbScheda(stato, cand, report, esito) {
   var dimensioni = (((report || {}).perDim) || []).map(function (d) {
     return {
       nome: (d.dim && d.dim.nome) || "",
+      descr: (d.dim && d.dim.descr) || "",
       peso: Number(d.dim && d.dim.peso) || 0,
       punteggio: d.punteggio,
       fatte: d.fatte,
@@ -525,6 +526,13 @@ function HrdbAnalisi(props) {
   }
 
   var coll = (analisi && analisi.colloquio) || { consiglio: "", perche: "", domande: [] };
+  var att = (analisi && analisi.personalita) || {};
+  var adat = (analisi && analisi.adattamento) || {};
+  var ins = (analisi && analisi.inserimento) || {};
+  var primi30 = ins.primi30 || [], primi90 = ins.primi90 || [], verifiche = ins.verifiche || [];
+  var haAdattamento = !!(adat.dove || (adat.come || []).length || (adat.attenzione || []).length);
+  var haInserimento = !!(primi30.length || primi90.length || (verifiche || []).length || ins.contributo);
+  var haModoLavoro = !!(att.ritratto || (att.combacia || []).length || (att.nonCombacia || []).length || (analisi && (analisi.attitudini || []).length));
 
   return d.jsxs("div", { "data-component": "hrdb-analisi", children: [
     d.jsx("h2", { children: "6. Analisi del candidato" }),
@@ -549,6 +557,26 @@ function HrdbAnalisi(props) {
         elenco("Aree migliorabili", analisi.migliorabili),
         elenco("Aspetti tecnici", analisi.tecnici)
       ]}),
+      haModoLavoro ? d.jsxs("div", { className: "reading-panel", children: [
+        d.jsx("p", { style: { margin: 0 }, children: d.jsx("strong", { children: "Attitudini e modo di lavorare" }) }),
+        att.ritratto ? d.jsx("p", { style: { marginBottom: 0 }, children: att.ritratto }) : null,
+        elenco("Comportamenti osservati nelle risposte", analisi.attitudini),
+        elenco("Dove corrisponde a quello che l'azienda cerca", att.combacia),
+        elenco("Dove non corrisponde", att.nonCombacia)
+      ]}) : null,
+      haAdattamento ? d.jsxs("div", { className: "reading-panel", children: [
+        d.jsx("p", { style: { margin: 0 }, children: d.jsx("strong", { children: "Come si adatterebbe in azienda" }) }),
+        adat.dove ? d.jsx("p", { style: { marginBottom: 0 }, children: adat.dove }) : null,
+        elenco("Condizioni che lo farebbero rendere", adat.come),
+        elenco("Punti di attenzione", adat.attenzione)
+      ]}) : null,
+      haInserimento ? d.jsxs("div", { className: "reading-panel", children: [
+        d.jsx("p", { style: { margin: 0 }, children: d.jsx("strong", { children: "Percorso di inserimento" }) }),
+        elenco("Primo mese", primi30),
+        elenco("Dal secondo al terzo mese", primi90),
+        elenco("Cosa misurare per capire se funziona", verifiche),
+        ins.contributo ? d.jsx("p", { style: { marginBottom: 0 }, children: ins.contributo }) : null
+      ]}) : null,
       d.jsxs("div", { className: "reading-panel", children: [
         d.jsxs("p", { style: { margin: 0 }, children: [
           d.jsx("strong", { children: "Colloquio: " }),
