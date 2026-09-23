@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diagnosi collegamento — HRDB</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:18px;line-height:1.5;background:#f6f7f9;color:#12181f}
+  h1{font-size:1.3rem;margin:0 0 6px}
+  p{margin:0 0 14px;font-size:.95rem}
+  .esito{background:#fff;border:1px solid #d7dce2;border-radius:10px;padding:14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.86rem;white-space:pre-wrap;word-break:break-word;min-height:120px}
+  .bene{color:#0a6b3d;font-weight:600}
+  .male{color:#a11d1d;font-weight:600}
+  .attesa{color:#5a6470}
+  button{margin-top:12px;padding:11px 16px;font-size:.95rem;border-radius:8px;border:1px solid #2b4a6f;background:#2b4a6f;color:#fff}
+  .nota{margin-top:14px;font-size:.85rem;color:#5a6470}
+</style>
+</head>
+<body>
+<h1>Diagnosi del collegamento</h1>
+<p>Apri questa pagina <strong>dal telefono con cui fai il questionario</strong>. Prova a contattare il servizio dove il programma deposita le risposte e racconta cosa succede. Non serve fare altro.</p>
+<pre class="esito" id="esito">sto provando…</pre>
+<button id="riprova" type="button">Riprova</button>
+<p class="nota">Se compare un errore che nomina il nome dell'indirizzo (per esempio <em>supabase</em>), il telefono non lo raggiunge: è la causa per cui le risposte non si salvano da sole. Gli indirizzi bloccati si sistemano togliendo VPN, blocco degli annunci o DNS privato, oppure cambiando rete.</p>
+<script>
+var CHIAVE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4Y2VnenlpZnRrcnF6dXNidGlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODUzMjYsImV4cCI6MjEwNTY2MTMyNn0.qkfgw4jAgaUO7bzsCxtctewqsQCMSkLAWDDJC1E0jvk";
+var INDIRIZZO = "https://wxcegzyiftkrqzusbtia.supabase.co/rest/v1/risposte";
+var esito = document.getElementById("esito");
+
+function scrivi(riga) { esito.textContent += "\n" + riga; }
+function bene(t) { return "\u2713 " + t; }
+function male(t) { return "\u2717 " + t; }
+
+async function prova(etichetta, indirizzo, opzioni) {
+  var inizio = Date.now();
+  try {
+    var r = await fetch(indirizzo, opzioni);
+    scrivi(bene(etichetta + ": risposta ricevuta in " + (Date.now() - inizio) + " ms, codice " + r.status));
+    return true;
+  } catch (e) {
+    scrivi(male(etichetta + ": NESSuna risposta dopo " + (Date.now() - inizio) + " ms"));
+    scrivi("    nome dell'errore: " + ((e && e.name) || "non riferito"));
+    scrivi("    messaggio: " + ((e && e.message) || "non riferito"));
+    return false;
+  }
+}
+
+async function avvia() {
+  esito.textContent = "prova iniziata";
+  scrivi("in rete: " + (navigator.onLine ? "sì" : "NO — il telefono dice di essere offline"));
+  if (navigator.connection && navigator.connection.effectiveType) {
+    scrivi("tipo di collegamento: " + navigator.connection.effectiveType + (navigator.connection.type ? " (" + navigator.connection.type + ")" : ""));
+  }
+  scrivi("pagina aperta da: " + location.origin);
+  scrivi("browser: " + navigator.userAgent);
+  scrivi("");
+  scrivi("--- 1. il servizio dove finiscono le risposte ---");
+  var uno = await prova("contatto diretto", INDIRIZZO + "?select=id&limit=1", {
+    headers: { apikey: CHIAVE, Authorization: "Bearer " + CHIAVE }
+  });
+  scrivi("");
+  scrivi("--- 2. la stessa richiesta con le intestazioni dell'invio vero ---");
+  if (uno) {
+    await prova("autorizzazione preliminare", INDIRIZZO, {
+      method: "OPTIONS",
+      headers: {
+        apikey: CHIAVE,
+        Authorization: "Bearer " + CHIAVE,
+        "Content-Type": "application/json",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "apikey,authorization,content-type,prefer"
+      }
+    });
+  } else {
+    scrivi("    salto: se non passa il contatto diretto, non passa nemmeno questo");
+  }
+  scrivi("");
+  scrivi("--- 3. prova di confronto con un sito qualsiasi ---");
+  await prova("contatto con google", "https://www.google.com/generate_204", { mode: "no-cors" });
+  scrivi("");
+  scrivi(uno
+    ? "CONCLUSIONE: il telefono raggiunge il servizio. Se il questionario non salva, il motivo è un altro: mandami le righe di questa pagina."
+    : "CONCLUSIONE: il telefono NON raggiunge il servizio. Ecco perché le risposte non si salvano da sole: qualcosa sul telefono o sulla rete blocca quell'indirizzo.");
+}
+
+document.getElementById("riprova").addEventListener("click", avvia);
+avvia();
+</script>
+</body>
+</html>
